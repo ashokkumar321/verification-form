@@ -78,3 +78,15 @@ button:hover {
     margin-bottom: 15px;
     font-size: 14px;
 }
+
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    h1 {
+        font-size: 24px;
+    }
+    button {
+        font-size: 16px;
+    }
+}
