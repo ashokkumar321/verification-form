@@ -1,77 +1,119 @@
+/* Reset and global styles */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 body {
-    background: linear-gradient(135deg, #74ebd5, #acb6e5);
-    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea, #764ba2);
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100vh;
 }
 
 .container {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    max-width: 400px;
     width: 100%;
-    max-width: 500px;
     text-align: center;
 }
 
-h1 {
-    color: #333;
-    font-size: 36px;
-    margin-bottom: 10px;
-}
-
 h2 {
-    color: #555;
-    font-size: 24px;
+    color: #fff;
     margin-bottom: 20px;
 }
 
-label {
-    display: block;
-    text-align: left;
-    margin: 10px 0 5px;
-    color: #666;
-}
-
-input[type="text"],
-input[type="email"],
-input[type="file"] {
+input, button {
     width: 100%;
-    padding: 12px;
-    margin-bottom: 15px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border: none;
+    outline: none;
     font-size: 16px;
 }
 
-input[type="file"] {
-    padding: 5px;
+input {
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    transition: 0.3s;
+}
+
+input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+input:focus {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 button {
-    width: 100%;
-    padding: 12px;
-    background: #007bff;
+    background: #ff7eb3;
     color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 18px;
+    font-weight: bold;
     cursor: pointer;
-    transition: background 0.3s;
+    transition: 0.3s;
 }
 
 button:hover {
-    background: #0056b3;
+    background: #ff4f87;
 }
+
+/* Email Verification Specific Styles */
+.email-verification {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 450px;
+    margin: auto;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.email-verification h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+.email-verification p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.email-verification input {
+    width: 90%;
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 5px;
+    border: none;
+    background: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    text-align: center;
+    font-size: 16px;
+}
+
+.email-verification button {
+    background: #29b6f6;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+}
+
+.email-verification button:hover {
+    background: #0288d1;
+}
+
 
 .error {
     color: red;
