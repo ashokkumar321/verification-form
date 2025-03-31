@@ -13,14 +13,29 @@ app.use(express.json());
 app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-const storage = multer.diskStorage({
-    destination: './uploads/', // Ensure this folder exists
-    filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+// 🔹 Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// ✅ Use Only Cloudinary Storage
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'uploads',
+        format: async (req, file) => file.mimetype.split('/')[1], 
+        public_id: (req, file) => `${Date.now()}-${file.originalname}`
     }
 });
+
+// ✅ Use Multer with Cloudinary
 const upload = multer({ storage });
+
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI)
@@ -111,24 +126,25 @@ app.post('/submit-application', upload.fields([
     { name: 'resume', maxCount: 1 }
 ]), async (req, res) => {
     const { email, name } = req.body;
-    const photo = req.files['photo'] ? req.files['photo'][0].filename : null;
-    const resume = req.files['resume'] ? req.files['resume'][0].filename : null;
+    const photo = req.files['photo'] ? req.files['photo'][0].path : null;
+    const resume = req.files['resume'] ? req.files['resume'][0].path : null;
 
     try {
         const user = await User.findOne({ email });
         if (!user || !user.isVerified) return res.send('Email not verified!');
-        
+
         user.name = name;
         user.photo = photo;
         user.resume = resume;
         await user.save();
 
-        res.render('success');  // ✅ This is calling the success.ejs file
+        res.render('success');
     } catch (error) {
         console.error('Application submission error:', error);
         res.render('application', { name, email, phone: user.phone, error: 'Failed to submit application!' });
     }
 });
+
 
 
 // Start server locally
