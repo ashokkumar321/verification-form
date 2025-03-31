@@ -13,17 +13,25 @@
         <% if (error) { %>
             <p class="error"><%= error %></p>
         <% } %>
-        <form action="/submit-form" method="POST" enctype="multipart/form-data">
+        <form action="/submit-application" method="POST" enctype="multipart/form-data">
             <label>Name:</label>
-            <input type="text" name="name" required>
+            <input type="text" name="name" value="<%= name %>" required>
+            
             <label>Email:</label>
             <input type="email" name="email" value="<%= email %>" readonly required>
+            
             <label>Phone:</label>
-            <input type="text" name="phone" value="<%= phone %>" readonly required>
+            <input type="tel" name="phone" value="<%= phone %>" required>
+            
+            <label>Password:</label>
+            <input type="password" name="password" required>
+            
             <label>Photo:</label>
             <input type="file" name="photo" accept="image/*" required>
+            
             <label>Resume:</label>
             <input type="file" name="resume" accept=".pdf,.docx" required>
+            
             <button type="submit">Submit Application</button>
         </form>
     </div>

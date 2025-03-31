@@ -2,7 +2,6 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const multer = require('multer');
-const twilio = require('twilio');
 const path = require('path');
 require('dotenv').config();
 
@@ -15,19 +14,18 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error('MongoDB connection error:', err));
-
-// Multer setup for file uploads
 const storage = multer.diskStorage({
-    destination: './uploads/',
+    destination: './uploads/', // Ensure this folder exists
     filename: (req, file, cb) => {
         cb(null, `${Date.now()}-${file.originalname}`);
     }
 });
 const upload = multer({ storage });
+
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
 // Nodemailer setup
 const transporter = nodemailer.createTransport({
@@ -38,25 +36,19 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Twilio setup
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-
 // Routes
 app.get('/', (req, res) => {
     res.render('index', { error: null });
 });
 
 app.post('/send-otp', async (req, res) => {
-    const { email, phone } = req.body;
-    if (!email || !phone) return res.render('index', { error: 'Email and phone are required!' });
-    if (!phone.startsWith('+')) return res.render('index', { error: 'Phone must start with country code (e.g., +91)!' });
+    const { email } = req.body;
+    if (!email) return res.render('index', { error: 'Email is required!' });
 
     try {
         let user = await User.findOne({ email });
         if (!user) {
-            user = new User({ email, phone });
-        } else {
-            user.phone = phone;
+            user = new User({ email });
         }
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -70,22 +62,19 @@ app.post('/send-otp', async (req, res) => {
             html: `<h2>Your OTP</h2><p>Your OTP is: <strong>${otp}</strong></p><p>It expires in 15 minutes.</p>`
         };
 
-        const smsMessage = `Your OTP is: ${otp}. Use it to verify your account.`;
-
-        await Promise.all([
-            transporter.sendMail(mailOptions),
-            twilioClient.messages.create({
-                body: smsMessage,
-                from: process.env.TWILIO_PHONE_NUMBER,
-                to: phone
-            })
-        ]);
+        await transporter.sendMail(mailOptions);
 
         res.render('otp', { email, error: null });
     } catch (error) {
         console.error('OTP sending error:', error);
         res.render('index', { error: 'Failed to send OTP!' });
     }
+});
+
+app.get('/otp', (req, res) => {
+    const { email } = req.query;
+    if (!email) return res.redirect('/');
+    res.render('otp', { email, error: null });
 });
 
 app.post('/verify-otp', async (req, res) => {
@@ -98,6 +87,7 @@ app.post('/verify-otp', async (req, res) => {
         user.verificationToken = null;
         await user.save();
 
+        console.log(`User ${email} verified successfully!`);
         res.redirect(`/application-form?email=${email}`);
     } catch (error) {
         console.error('OTP verification error:', error);
@@ -105,35 +95,41 @@ app.post('/verify-otp', async (req, res) => {
     }
 });
 
+
 app.get('/application-form', async (req, res) => {
     const { email } = req.query;
     const user = await User.findOne({ email });
     if (!user || !user.isVerified) return res.send('Email not verified!');
-    res.render('application', { email, phone: user.phone, error: null });
+    
+    // Ensure error is always defined
+    res.render('application', { name: user.name || '', email, phone: user.phone || '', error: '' });
 });
 
-app.post('/submit-form', upload.fields([
+
+app.post('/submit-application', upload.fields([
     { name: 'photo', maxCount: 1 },
     { name: 'resume', maxCount: 1 }
 ]), async (req, res) => {
-    const { name, email, phone } = req.body;
+    const { email, name } = req.body;
     const photo = req.files['photo'] ? req.files['photo'][0].filename : null;
     const resume = req.files['resume'] ? req.files['resume'][0].filename : null;
 
     try {
         const user = await User.findOne({ email });
         if (!user || !user.isVerified) return res.send('Email not verified!');
+        
         user.name = name;
-        user.phone = phone;
         user.photo = photo;
         user.resume = resume;
         await user.save();
-        res.send('Application submitted successfully!');
+
+        res.render('success');  // ✅ This is calling the success.ejs file
     } catch (error) {
-        console.error('Form submission error:', error);
-        res.render('application', { email, phone, error: 'Failed to submit form!' });
+        console.error('Application submission error:', error);
+        res.render('application', { name, email, phone: user.phone, error: 'Failed to submit application!' });
     }
 });
+
 
 // Start server locally
 const PORT = process.env.PORT || 3000;
