@@ -6,6 +6,27 @@
     <title>Application Form - Job Portal</title>
     <link rel="stylesheet" href="/styles.css">
 </head>
+<script>
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const phone = document.querySelector('input[name="phone"]').value.trim();
+        const password = document.querySelector('input[name="password"]').value.trim();
+
+        // Validate phone number (only digits, exactly 10 characters)
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(phone)) {
+            alert("Please enter a valid 10-digit phone number (digits only, no letters).");
+            e.preventDefault(); // Stop form submission
+            return;
+        }
+
+        // Validate password (at least 8 characters and at least one special character)
+        const passwordRegex = /^(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{8,}$/;
+        if (!passwordRegex.test(password)) {
+            alert("Password must be at least 8 characters long and include at least one special character.");
+            e.preventDefault(); // Stop form submission
+        }
+    });
+</script>
 <body>
     <div class="container">
         <h1>Job Portal</h1>
